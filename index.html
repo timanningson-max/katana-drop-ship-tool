@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aspen Drop-Ship · Katana side-panel prototype</title>
+<style>
+  :root{
+    --nav:#1c2a38; --nav-hi:rgba(255,255,255,.12);
+    --blue:#1a73e8; --blue-d:#1666cf; --blue-soft:#e8f0fe;
+    --ink:#202733; --muted:#6b7280; --faint:#98a0aa;
+    --line:#e4e7ea; --canvas:#f3f4f5; --card:#ffffff;
+    --green:#3c8b5e; --amber:#f3c44d; --amber-tx:#5b4a16;
+    --red:#d2502b; --overdue:#c0392b; --grey:#d6dadd; --grey-tx:#3a424c; --yellow:#f6d736;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:"Roboto",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--canvas);font-size:13px;-webkit-font-smoothing:antialiased}
+  a{color:var(--blue);text-decoration:none;cursor:pointer}
+  .ribbon{background:#2a2113;color:#f6d736;font-size:11px;text-align:center;padding:3px 12px;font-weight:500}
+  /* top nav */
+  .topnav{height:56px;background:var(--nav);display:flex;align-items:stretch;color:#cfd6de;padding:0 14px}
+  .logo{display:flex;align-items:center;color:#fff;font-weight:800;font-size:20px;letter-spacing:-.02em;padding:0 16px 0 6px}
+  .mainnav{display:flex;align-items:stretch}
+  .ni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:58px;color:#aab3bd;font-size:10.5px;cursor:pointer;border:0;background:none;position:relative}
+  .ni svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .ni .ic{width:32px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+  .ni:hover{color:#fff}.ni.active{color:#fff}.ni.active .ic{background:var(--nav-hi)}
+  .topright{margin-left:auto;display:flex;align-items:center;gap:13px}
+  .t-create{display:flex;align-items:center;gap:6px;color:#fff;font-size:13px;cursor:pointer}
+  .t-create .plus{width:17px;height:17px;border-radius:50%;background:#fff;color:var(--nav);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+  .t-demo{background:var(--yellow);color:#2a2113;font-weight:600;font-size:12px;border-radius:6px;padding:6px 10px;cursor:pointer}
+  .t-icons{display:flex;align-items:center;gap:12px;color:#aab3bd}
+  .t-icons .ic{position:relative;cursor:pointer}.t-icons .ic:hover{color:#fff}
+  .t-icons .bdot{position:absolute;top:-4px;right:-4px;background:#e8443b;color:#fff;border-radius:10px;font-size:9px;padding:0 4px;font-weight:700}
+  .av{width:29px;height:29px;border-radius:50%;background:#3d5168;color:#fff;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center}
+  /* workspace split */
+  .workspace{display:grid;grid-template-columns:1fr 384px;height:calc(100% - 56px - 22px - 30px)}
+  .native{overflow:auto;border-right:1px solid #d7dadd}
+  .panel{background:#fff;border-left:1px solid var(--line);box-shadow:-6px 0 18px rgba(20,30,42,.06);display:flex;flex-direction:column;min-height:0}
+  .leftview,.pview{display:none}.leftview.show,.pview.show{display:block}
+  /* native chrome */
+  .subtabs{background:#fff;border-bottom:1px solid var(--line);display:flex;gap:2px;padding:0 20px;height:42px;align-items:flex-end}
+  .subtabs a{padding:0 11px 11px;color:var(--muted);font-size:13px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .subtabs a.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .toolbar{background:#fff;border-bottom:2px solid var(--blue);display:flex;align-items:center;gap:9px;padding:8px 20px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .seg button{border:0;background:#fff;color:var(--muted);font-size:12.5px;font-weight:600;padding:5px 14px;cursor:pointer}
+  .seg button.on{background:var(--blue);color:#fff}
+  .toolbar .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .drop{border:1px solid var(--line);border-radius:7px;background:#fff;padding:5px 10px;font-size:12.5px;color:var(--ink);cursor:pointer}
+  .count{font-size:13.5px;font-weight:600;margin:12px 20px 0}
+  .count .chip{font-weight:500;font-size:11.5px;color:var(--muted);background:#eef0f2;border-radius:6px;padding:2px 8px;margin-left:8px}
+  /* native table */
+  .tbl{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:10px 20px 20px}
+  table{width:100%;border-collapse:collapse}
+  thead th{text-align:left;font-size:11px;color:#7a828c;font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line);background:#fafbfb;white-space:nowrap}
+  .cfmark{display:inline-block;background:#efe7fb;color:#6a45c2;font-size:9px;font-weight:700;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle}
+  tbody td{padding:0;border-bottom:1px solid var(--line);font-size:12.5px;height:40px}
+  tbody td .pad{padding:8px 12px;display:block}
+  tbody tr{cursor:pointer}tbody tr:hover{background:#f6f9fe}tbody tr:last-child td{border-bottom:0}
+  .mono{font-family:"Roboto Mono",ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+  .muted{color:var(--muted)}.faint{color:var(--faint)}.red{color:var(--overdue)}.lnk{color:var(--blue);font-weight:500}
+  .cell{height:40px;display:flex;align-items:center;padding:0 12px;font-weight:600;font-size:12px}
+  .c-green{background:var(--green);color:#fff}.c-amber{background:var(--amber);color:var(--amber-tx)}
+  .c-grey{background:var(--grey);color:var(--grey-tx)}
+  .icoflag{font-weight:700;margin-right:4px}
+  /* native product page */
+  .pwrap{padding:16px 20px}
+  .pcard{background:#fff;border:1px solid var(--line);border-radius:8px}
+  .ptop{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .ptop .t{font-size:11px;color:var(--muted)}.ptop .t b{display:block;font-size:15px;color:var(--ink);font-weight:600}
+  .ptop .r{margin-left:auto;color:var(--faint);font-size:12px;display:flex;gap:12px}
+  .ptabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--line);background:#f6f8fb}
+  .ptabs a{padding:9px 11px;font-size:12.5px;color:var(--muted);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .ptabs a.active{color:var(--blue);border-bottom-color:var(--blue);background:#fff}
+  .ptabs .new{background:var(--blue-soft);color:var(--blue-d);font-size:8.5px;font-weight:700;border-radius:9px;padding:1px 5px;margin-left:4px}
+  .pbody{display:grid;grid-template-columns:1fr 1fr;gap:26px;padding:18px 16px}
+  .fld{margin-bottom:14px}.fld label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px}
+  .fld .val{border-bottom:1px solid var(--line);padding:4px 0;font-size:13px}
+  .secttl{font-size:12.5px;font-weight:600;margin:0 0 10px}
+  .checks{display:flex;gap:18px;margin-bottom:20px}
+  .chk{display:flex;align-items:center;gap:7px;font-size:13px}
+  .box{width:16px;height:16px;border-radius:4px;border:2px solid #c2c9d2;display:flex;align-items:center;justify-content:center}
+  .box.on{background:var(--blue);border-color:var(--blue);color:#fff;font-size:11px}
+  .radios{display:flex;flex-direction:column;gap:9px}
+  .rad{display:flex;align-items:center;gap:8px;font-size:13px}
+  .rdot{width:16px;height:16px;border-radius:50%;border:2px solid #c2c9d2;display:inline-block}
+  .rad.on .rdot{border-color:var(--blue);background:radial-gradient(circle at center,var(--blue) 0 4px,#fff 5px)}
+  .vtable{margin:4px 16px 16px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .vtable th{padding:7px 10px}.vtable td{padding:8px 10px;border-bottom:0}
+  .banner{display:flex;gap:10px;align-items:flex-start;border-radius:8px;padding:11px 14px;margin-bottom:14px;font-size:12.5px}
+  .banner.amber{background:#fff8e6;color:#6b551a;border:1px solid #f0e0a8}
+  .banner .bi{font-size:15px}
+  /* ===== side panel (our build) ===== */
+  .ph{background:var(--nav);color:#fff;display:flex;align-items:center;gap:9px;padding:11px 14px;flex:0 0 auto}
+  .ph .logo2{width:17px;height:17px;border-radius:4px;background:linear-gradient(135deg,#3d5168,#6b8199)}
+  .ph .v{font-size:10.5px;color:#8fa0b2;font-weight:500}
+  .ph .icns{margin-left:auto;display:flex;gap:12px;color:#8fa0b2}
+  .ph .icns span{cursor:pointer}.ph .icns span:hover{color:#fff}
+  .pctx{padding:11px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;font-weight:600;font-size:13.5px;background:#f6f8fb;flex:0 0 auto}
+  .pctx .tag{margin-left:auto;background:var(--blue-soft);color:var(--blue-d);font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px}
+  .pscroll{overflow:auto;padding:14px 15px;flex:1 1 auto}
+  .stat{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .stat .n{font-size:20px;font-weight:700;min-width:34px}.stat.warn .n{color:var(--amber-tx)}
+  .stat .l{font-size:12.5px;color:var(--muted)}
+  .qhd{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);margin:16px 0 8px;font-weight:600}
+  .qitem{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:9px}
+  .qitem .ttl{font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:6px}
+  .qitem .s{color:var(--muted);font-size:11.5px;margin:2px 0 9px}
+  .pill{font-size:9.5px;font-weight:700;border-radius:4px;padding:1px 5px}
+  .pill.amber{background:#fdf3d4;color:var(--amber-tx)}.pill.blue{background:var(--blue-soft);color:var(--blue-d)}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+  .btn:hover{background:#f6f7f8}
+  .btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}.btn.pri:hover{background:var(--blue-d)}
+  .btn.dark{background:var(--nav);border-color:var(--nav);color:#fff}.btn.dark:hover{background:#2a3b4d}
+  .btn.sm{padding:5px 10px;font-size:12px}.btn.full{width:100%}
+  .apcard{border:1px solid var(--line);border-radius:8px;padding:14px}
+  .apcard h4{margin:0 0 4px;font-size:13px}.apcard p{margin:0 0 12px;color:var(--muted);font-size:12px}
+  .backline{font-size:12px;color:var(--muted);margin-bottom:10px;cursor:pointer;display:inline-block}
+  .vcard{border:1px solid var(--line);border-radius:8px;padding:10px 11px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px}
+  .vcard:hover{border-color:#c4cdd6}
+  .vcard.sel{border-color:var(--blue);background:var(--blue-soft)}
+  .radio{width:15px;height:15px;border-radius:50%;border:2px solid #c2c9d6;flex:0 0 auto}
+  .vcard.sel .radio{border-color:var(--blue);background:radial-gradient(circle at center,var(--blue) 0 4px,#fff 5px)}
+  .vcard .vn{font-weight:600;font-size:12.5px}
+  .vcard .vm{font-size:11px;color:var(--muted);margin-top:1px}
+  .vcard .vp{margin-left:auto;text-align:right}.vcard .vp .pr{font-weight:700;font-size:13px}.vcard .vp .lt{font-size:10.5px;color:var(--muted)}
+  .best{font-size:9px;font-weight:700;color:var(--green);background:#e6f4ec;border-radius:4px;padding:1px 4px;margin-left:5px}
+  .prev{background:#fafbfc;border:1px dashed var(--line);border-radius:8px;padding:11px 12px;font-size:12px;line-height:1.6;margin:6px 0 12px}
+  .prev b{font-weight:600}
+  /* legend */
+  .legend{height:30px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:0 16px;font-size:11.5px;color:var(--muted)}
+  .legend .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  /* modal + toast */
+  .scrim{position:fixed;inset:0;background:rgba(20,30,42,.5);display:none;align-items:center;justify-content:center;z-index:60}
+  .scrim.show{display:flex}
+  .modal{background:#fff;border-radius:12px;width:420px;max-width:92vw;padding:26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal .chk2{width:52px;height:52px;border-radius:50%;background:#e6f4ec;color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:27px}
+  .modal h3{margin:0 0 6px;font-size:17px}.modal p{margin:0 0 18px;color:var(--muted);font-size:13px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--nav);color:#fff;padding:11px 16px;border-radius:9px;font-size:12.5px;opacity:0;transition:.25s;z-index:70;display:flex;align-items:center;gap:9px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast .d{width:8px;height:8px;border-radius:50%;background:#4ade80}
+</style>
+</head>
+<body>
+<div class="ribbon">● PROTOTYPE — sample data, not connected to a live Katana instance</div>
+
+<header class="topnav">
+  <div class="logo">katana</div>
+  <nav class="mainnav">
+    <button class="ni active" data-nav="sell" onclick="left('orders')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16l-1 4H5z"/><path d="M5 11v8h14v-8"/><path d="M9 19v-5h6v5"/></svg></span>Sell</button>
+    <button class="ni" onclick="toast('Native Katana — not in this prototype')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M14 9V5a2 2 0 0 0-2-2l-3 7v9h9a2 2 0 0 0 2-2l1-6a2 2 0 0 0-2-2z"/><path d="M5 18V11H3v7z"/></svg></span>Make</button>
+    <button class="ni" onclick="toast('Native Katana — POs appear here')"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.5 12h11l2-8H6"/></svg></span>Buy</button>
+    <button class="ni" onclick="toast('Native Katana — not in this prototype')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 8l9-5 9 5-9 5z"/><path d="M3 8v8l9 5 9-5V8"/></svg></span>Stock</button>
+    <button class="ni" onclick="toast('Native Katana — not in this prototype')"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M9 14l2 2 4-4"/></svg></span>Plan</button>
+    <button class="ni" onclick="toast('Native Katana — not in this prototype')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 17V11M13 17V7M18 17v-4"/></svg></span>Insights</button>
+    <button class="ni" data-nav="items" onclick="left('product')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h9l7 7-7 7-9-9z"/><circle cx="8.5" cy="10.5" r="1.2"/></svg></span>Items</button>
+  </nav>
+  <div class="topright">
+    <div class="t-create"><span class="plus">+</span>Create</div>
+    <div class="t-demo">🗄 Demo data</div>
+    <div class="t-icons">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="1.5"/><circle cx="12" cy="6" r="1.5"/><circle cx="18" cy="6" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/></svg></div>
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3h4v4h4v4h-4v4h-4v-4H6V7h4z"/></svg></div>
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 21h4"/></svg><span class="bdot">1</span></div>
+      <div class="av">CN</div>
+    </div>
+  </div>
+</header>
+
+<div class="workspace">
+  <!-- ============ LEFT: NATIVE KATANA (unchanged) ============ -->
+  <main class="native">
+    <!-- native: sales orders list -->
+    <section class="leftview show" id="left-orders">
+      <div class="subtabs"><a>Quotes</a><a class="active">Sales orders</a><a>Returns</a><a>Price lists</a><a>Customers</a></div>
+      <div class="toolbar">
+        <div class="seg"><button class="on">Open</button><button>Done</button></div>
+        <div class="right"><div class="drop">▦ My view ▾</div><div class="drop">⚲ Main Distribution ▾</div><div class="drop" style="background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600">+ Sales order</div></div>
+      </div>
+      <div class="count">25 orders <span class="chip">My view</span></div>
+      <div class="tbl">
+        <table>
+          <thead><tr>
+            <th>Created date</th><th>Order #</th><th>Customer</th><th>Channel</th>
+            <th>Total amount</th><th>Delivery deadline</th><th>Sales items</th><th>Delivery</th>
+          </tr></thead>
+          <tbody>
+            <tr onclick="openSO()">
+              <td><span class="pad">2026-05-27</span></td><td><span class="pad lnk mono">SO-10519</span></td>
+              <td><span class="pad">BlueRidge Aerospace</span></td><td><span class="pad muted">Email PDF</span></td>
+              <td><span class="pad">4,120.00 <span class="faint">USD</span></span></td><td><span class="pad">2026-06-02</span></td>
+              <td><div class="cell c-amber">Expected</div></td><td><div class="cell c-grey">Not shipped ▾</div></td>
+            </tr>
+            <tr onclick="openSO()">
+              <td><span class="pad">2026-05-27</span></td><td><span class="pad lnk mono">SO-10518</span></td>
+              <td><span class="pad">Precision Hydraulics Inc.</span></td><td><span class="pad muted">BigCommerce</span></td>
+              <td><span class="pad">1,240.00 <span class="faint">USD</span></span></td><td><span class="pad">2026-06-01</span></td>
+              <td><div class="cell c-amber">Expected</div></td><td><div class="cell c-grey">Not shipped ▾</div></td>
+            </tr>
+            <tr onclick="openSO()">
+              <td><span class="pad">2026-05-27</span></td><td><span class="pad lnk mono">SO-10517</span></td>
+              <td><span class="pad">Midwest Conveyor Co.</span></td><td><span class="pad muted">Email</span></td>
+              <td><span class="pad">3,860.00 <span class="faint">USD</span></span></td><td><span class="pad red">2026-05-30</span></td>
+              <td><div class="cell" style="background:var(--red);color:#fff">Not available</div></td><td><div class="cell c-grey">Not shipped ▾</div></td>
+            </tr>
+            <tr onclick="openSO()">
+              <td><span class="pad">2026-05-26</span></td><td><span class="pad lnk mono">SO-10516</span></td>
+              <td><span class="pad">Continental Pumps LLC</span></td><td><span class="pad muted">Amazon FBA</span></td>
+              <td><span class="pad">980.00 <span class="faint">USD</span></span></td><td><span class="pad">2026-05-29</span></td>
+              <td><div class="cell c-amber">Expected</div></td><td><div class="cell c-grey">Not shipped ▾</div></td>
+            </tr>
+            <tr onclick="openSO()">
+              <td><span class="pad">2026-05-26</span></td><td><span class="pad lnk mono">SO-10515</span></td>
+              <td><span class="pad">Precision Hydraulics Inc.</span></td><td><span class="pad muted">Phone</span></td>
+              <td><span class="pad">2,310.00 <span class="faint">USD</span></span></td><td><span class="pad">2026-05-30</span></td>
+              <td><div class="cell c-amber">Expected</div></td><td><div class="cell c-grey">Not shipped ▾</div></td>
+            </tr>
+            <tr onclick="openSO()">
+              <td><span class="pad">2026-05-26</span></td><td><span class="pad lnk mono">SO-10514</span></td>
+              <td><span class="pad">Apex Robotics</span></td><td><span class="pad muted">BigCommerce</span></td>
+              <td><span class="pad">560.00 <span class="faint">USD</span></span></td><td><span class="pad">2026-05-31</span></td>
+              <td><div class="cell c-amber">Expected</div></td><td><div class="cell c-grey">Not shipped ▾</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="faint" style="font-size:11.5px;margin:0 20px 18px">Standard Katana sales-orders list — unchanged. Open an order to see the line-level <b>Linked PO</b> custom field.</p>
+    </section>
+
+    <!-- native: product page (new SKU) -->
+    <section class="leftview" id="left-product">
+      <div class="subtabs"><a class="active">Active</a><a>Archive</a></div>
+      <div class="pwrap">
+        <div class="banner amber"><span class="bi">⬡</span><div><b>New SKU, auto-set to buy-only.</b> Created from <span class="mono">SO-10519</span> and flipped to <b>Buy</b> (Make off) by the integration. The drop-ship tool flagged it for a vendor — see the panel →</div></div>
+        <div class="pcard">
+          <div class="ptop"><div class="t">Product<b>HX-M12-90-A4-316</b></div><div class="r"><span>All changes saved</span><span>🖶</span><span>⋮</span><span>✕</span></div></div>
+          <div class="ptabs"><a class="active">General info</a><a>Used in BOMs</a><a>Supply details</a><a>Replenishment<span class="new">NEW</span></a></div>
+          <div class="pbody">
+            <div>
+              <div class="fld"><label>Product name</label><div class="val">Hex bolt M12 × 90 mm, A4-316 stainless</div></div>
+              <div class="fld"><label>Category</label><div class="val">Fasteners / Bolts</div></div>
+              <div class="fld"><label>Unit of measure</label><div class="val">pcs</div></div>
+            </div>
+            <div>
+              <div class="secttl">Usability</div>
+              <div class="checks">
+                <div class="chk"><span class="box on">✓</span>Sell</div>
+                <div class="chk"><span class="box on">✓</span>Buy</div>
+                <div class="chk"><span class="box off"></span>Make</div>
+                <div class="chk"><span class="box off"></span>Kit/bundle</div>
+              </div>
+              <div class="secttl">Product tracking</div>
+              <div class="radios">
+                <div class="rad"><span class="rdot"></span>No tracking</div>
+                <div class="rad on"><span class="rdot"></span>Batch / lot numbers</div>
+                <div class="rad"><span class="rdot"></span>Serial numbers</div>
+              </div>
+            </div>
+          </div>
+          <table class="vtable" style="width:auto"><thead><tr><th>Variant code / SKU</th><th>Default sales price</th><th>In stock</th><th>Default supplier</th></tr></thead>
+            <tbody><tr><td class="mono">HX-M12-90-A4-316</td><td>2.40 USD</td><td>0 pcs</td><td style="color:var(--red);font-weight:600">Not set</td></tr></tbody>
+          </table>
+        </div>
+        <p class="faint" style="font-size:11.5px;margin:10px 2px">This is Katana's standard product page — unchanged. The only automated edits are the Sell/Buy/Make flags. Vendor assignment happens in the panel →</p>
+      </div>
+    </section>
+
+    <!-- native: sales order detail (line-item Linked PO custom field) -->
+    <section class="leftview" id="left-so">
+      <div class="subtabs"><a>Quotes</a><a class="active">Sales orders</a><a>Returns</a><a>Price lists</a><a>Customers</a></div>
+      <div class="pwrap">
+        <span class="backline" onclick="left('orders')">← Sales orders</span>
+        <div class="pcard">
+          <div class="ptop"><div class="t">Sales order<b>SO-10519 · BlueRidge Aerospace</b></div><div class="r"><span>Email PDF</span><span>⋮</span><span>✕</span></div></div>
+          <div class="ptabs"><a class="active">General</a><a>Addresses</a><a>Documents</a></div>
+          <div style="padding:16px">
+            <div class="banner amber"><span class="bi">↬</span><div>Lines with a default supplier were auto-purchased; the new buy-only SKU still needs a vendor — assign it in the panel →</div></div>
+            <table class="vtable" style="margin:0">
+              <thead><tr><th>Line item</th><th>Qty</th><th>Unit price</th><th>Linked PO <span class="cfmark" title="Line-item custom field, written by the integration">ƒ custom field</span></th></tr></thead>
+              <tbody>
+                <tr><td class="mono">FLNGN-M10-ZP</td><td>2,000</td><td>0.39</td><td class="mono lnk">DROP-SO-10519-1</td></tr>
+                <tr><td class="mono">WSHR-FLT-1/2-SS</td><td>1,500</td><td>0.18</td><td class="mono lnk">DROP-SO-10519-1</td></tr>
+                <tr><td class="mono">HX-M12-90-A4-316</td><td>500</td><td>3.10</td><td id="line-po"><span style="background:#fdf3d4;color:#5b4a16;font-size:11px;font-weight:600;border-radius:5px;padding:2px 8px">● Awaiting vendor</span></td></tr>
+              </tbody>
+            </table>
+            <p class="faint" style="font-size:11.5px;margin:12px 2px 0">The <b>Linked PO</b> field sits on each <b>line item</b> — so one order can split across multiple POs. Lines 1 &amp; 2 share a supplier (DROP-SO-10519-1); the new SKU gets its own once a vendor is chosen.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ RIGHT: OUR SIDE PANEL (the drop-ship tool) ============ -->
+  <aside class="panel">
+    <div class="ph"><span class="logo2"></span>Katana Admin Panel<span class="v">v1.6.3</span>
+      <span class="icns"><span title="Pop out to a separate tab" onclick="toast('Could also open as a separate tab')">⧉</span><span>✕</span></span></div>
+    <div class="pctx" id="pctx">Drop-Ship<span class="tag" id="pctx-tag">QUEUE</span></div>
+
+    <!-- panel: dashboard / review queue -->
+    <div class="pscroll pview show" id="pan-dash">
+      <div class="stat"><div class="n">27</div><div class="l">POs auto-created today</div></div>
+      <div class="stat warn"><div class="n">4</div><div class="l">New SKUs to review</div></div>
+      <div class="stat warn"><div class="n">6</div><div class="l">Order lines awaiting a vendor</div></div>
+      <div class="qhd">Needs your attention</div>
+      <div class="qitem">
+        <div class="ttl"><span class="pill amber">NEW SKU</span> HX-M12-90-A4-316</div>
+        <div class="s">From SO-10519 · buy-only · no default supplier</div>
+        <button class="btn sm full" onclick="review()">Review &amp; assign vendor</button>
+      </div>
+      <div class="qitem">
+        <div class="ttl"><span class="pill blue">LINE</span> SHCS-3/8-16x2-GR8</div>
+        <div class="s">On SO-10517 · 1,000 pcs · awaiting a vendor</div>
+        <button class="btn sm full" onclick="openGrid()">Choose vendor</button>
+      </div>
+      <div class="qitem">
+        <div class="ttl"><span class="pill amber">NEW SKU</span> STUD-M16-1.5x120-B7</div>
+        <div class="s">From SO-10519 · buy-only · no default supplier</div>
+        <button class="btn sm full" onclick="review()">Review &amp; assign vendor</button>
+      </div>
+    </div>
+
+    <!-- panel: multiple suppliers card (matches screenshot 3) -->
+    <div class="pscroll pview" id="pan-suppliers">
+      <span class="backline" onclick="home()">← Drop-Ship queue</span>
+      <div class="apcard">
+        <h4>Multiple Suppliers</h4>
+        <p>View and manage supplier information for <b>HX-M12-90-A4-316</b>.</p>
+        <button class="btn dark full" onclick="openGrid()">Open Supplier Panel</button>
+      </div>
+      <div class="banner amber" style="margin-top:14px"><span class="bi">↬</span><div>This SKU has <b>no default supplier</b>. Pick one to raise the drop-ship PO and (optionally) set it as the default.</div></div>
+    </div>
+
+    <!-- panel: vendor selection + create PO -->
+    <div class="pscroll pview" id="pan-grid">
+      <span class="backline" onclick="review()">← Multiple Suppliers</span>
+      <div style="font-weight:600;font-size:13px;margin-bottom:3px">HX-M12-90-A4-316</div>
+      <div class="faint" style="font-size:11.5px;margin-bottom:12px">for SO-10519 · BlueRidge Aerospace · qty 500</div>
+      <div class="vcard" onclick="pick(this,'Brighton-Best Intl.','$2.38')"><span class="radio"></span><div><div class="vn">Brighton-Best Intl.</div><div class="vm">MOQ 250 · 250/pcs · lot BB-2240 · 98%</div></div><div class="vp"><div class="pr">$2.38</div><div class="lt">7 days</div></div></div>
+      <div class="vcard" onclick="pick(this,'Würth Industrie','$2.21')"><span class="radio"></span><div><div class="vn">Würth Industrie</div><div class="vm">MOQ 500 · 500/pcs · lot WU-1187 · 95%</div></div><div class="vp"><div class="pr">$2.21</div><div class="lt">10 days</div></div></div>
+      <div class="vcard sel" onclick="pick(this,'Fastenal','$2.55')"><span class="radio"></span><div><div class="vn">Fastenal <span class="best">FASTEST</span></div><div class="vm">MOQ 100 · 100/pcs · lot FN-9920 · 99%</div></div><div class="vp"><div class="pr">$2.55</div><div class="lt">4 days</div></div></div>
+      <div class="vcard" onclick="pick(this,'Bossard','$2.09')"><span class="radio"></span><div><div class="vn">Bossard <span class="best">CHEAPEST</span></div><div class="vm">MOQ 1,000 · 500/pcs · lot BO-3301 · 96%</div></div><div class="vp"><div class="pr">$2.09</div><div class="lt">13 days</div></div></div>
+      <div class="qhd">Drop-ship PO preview</div>
+      <div class="prev">
+        <b>DROP-SO-10519-2</b> → <span id="pv-vendor">Fastenal</span><br>
+        HX-M12-90-A4-316 × 500 @ <span id="pv-price">$2.55</span><br>
+        <span class="faint">Delivery notes:</span> drop-ship to BlueRidge Aerospace, Wichita KS — orig. SO-10519
+      </div>
+      <button class="btn pri full" onclick="createPO()">Create drop-ship PO</button>
+      <button class="btn full" style="margin-top:8px" onclick="home()">Cancel</button>
+    </div>
+  </aside>
+</div>
+
+<div class="legend">
+  <span><span class="sw" style="background:#fff;border:1px solid #c9ced3"></span>Left: <b>native Katana</b> — unchanged; SOs/POs slot into existing lists</span>
+  <span><span class="sw" style="background:#efe7fb"></span><b>ƒ Linked PO</b> — custom field on each <b>SO line item</b>, written by the integration</span>
+  <span><span class="sw" style="background:#1c2a38"></span>Right: <b>the drop-ship tool</b> we build (side panel / tab)</span>
+</div>
+
+<div class="scrim" id="scrim"><div class="modal">
+  <div class="chk2">✓</div><h3>Drop-ship PO created</h3>
+  <p id="m-body">DROP-SO-10519-2 raised with Fastenal. It appears in Buy ▸ Purchasing, and the SO line’s Linked PO field is populated.</p>
+  <button class="btn pri full" onclick="closeModal()">Done</button>
+</div></div>
+<div class="toast" id="toast"><span class="d"></span><span id="toast-tx">Done</span></div>
+
+<script>
+  var sel={vendor:'Fastenal',price:'$2.55'};
+  var PCTX={dash:['Drop-Ship','QUEUE'], suppliers:['Multiple Suppliers','PRODUCT'], grid:['Choose supplier','DROP-SHIP']};
+
+  function left(id){
+    document.querySelectorAll('.leftview').forEach(function(v){v.classList.remove('show');});
+    document.getElementById('left-'+id).classList.add('show');
+    document.querySelectorAll('.ni').forEach(function(a){a.classList.remove('active');});
+    var nv=document.querySelector('.ni[data-nav="'+(id==='product'?'items':'sell')+'"]'); if(nv) nv.classList.add('active');
+  }
+  function panel(id){
+    document.querySelectorAll('.pview').forEach(function(v){v.classList.remove('show');});
+    document.getElementById('pan-'+id).classList.add('show');
+    document.getElementById('pctx').childNodes[0].nodeValue=PCTX[id][0];
+    document.getElementById('pctx-tag').textContent=PCTX[id][1];
+  }
+  function home(){ left('orders'); panel('dash'); }
+  function review(){ left('product'); panel('suppliers'); }
+  function openGrid(){ left('product'); panel('grid'); }
+  function pick(c,vendor,price){
+    document.querySelectorAll('#pan-grid .vcard').forEach(function(r){r.classList.remove('sel');});
+    c.classList.add('sel'); sel.vendor=vendor; sel.price=price;
+    document.getElementById('pv-vendor').textContent=vendor;
+    document.getElementById('pv-price').textContent=price;
+  }
+  function createPO(){
+    document.getElementById('m-body').textContent='DROP-SO-10519-2 raised with '+sel.vendor+'. It appears in Buy ▸ Purchasing, and the SO line’s Linked PO field is populated.';
+    document.getElementById('scrim').classList.add('show');
+  }
+  function openSO(){ left('so'); }
+  function closeModal(){
+    document.getElementById('scrim').classList.remove('show');
+    var lp=document.getElementById('line-po'); if(lp) lp.innerHTML='<span class="mono lnk">DROP-SO-10519-2</span>';
+    toast('DROP-SO-10519-2 created · '+sel.vendor+' · line PO field populated'); left('so'); panel('dash');
+  }
+  var tt;
+  function toast(msg){var t=document.getElementById('toast');document.getElementById('toast-tx').textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},3400);}
+  document.getElementById('scrim').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  home();
+</script>
+</body>
+</html>
